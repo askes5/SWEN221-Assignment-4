@@ -37,7 +37,7 @@ public class ListTable implements Table {
     
     @Override
     public List<List<Value>> rows() {
-        return new ArrayList<>(rows);
+        return rows;
     }
     
     @Override
@@ -76,7 +76,7 @@ public class ListTable implements Table {
          * create a new row with no values
          */
         public TableRow() {
-            values = new ArrayList<>();
+            values = new ArrayList<>(fields.size());
         }
         
         @Override

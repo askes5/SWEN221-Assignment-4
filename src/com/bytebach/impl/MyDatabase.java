@@ -1,8 +1,6 @@
 package com.bytebach.impl;
 
-import com.bytebach.model.Database;
-import com.bytebach.model.Field;
-import com.bytebach.model.Table;
+import com.bytebach.model.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,7 +57,10 @@ public class MyDatabase implements Database {
     
     @Override
     public void createTable(String name, List<Field> fields) {
-        
+        for (Table table : tables) {
+            if (table.name().equals(name)) throw new InvalidOperation("cannot create table with same name");
+        }
+        tables.add(new ListTable(name, new FieldList(fields)));
     }
     
     @Override
