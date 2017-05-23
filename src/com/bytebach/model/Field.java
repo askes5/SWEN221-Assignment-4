@@ -10,10 +10,10 @@ package com.bytebach.model;
  * 
  */
 public final class Field {
-	private String title;
-	private Type type;
-	private String refTable;
-	private boolean isKey;	
+	private final String title;
+	private final Type type;
+	private final String refTable;
+	private final boolean isKey;
 	
 	public Field(String title, Type type, boolean isKey) {
 		if(type == Type.REFERENCE) {
@@ -22,7 +22,8 @@ public final class Field {
 		}
 		this.title = title;
 		this.type = type;
-		this.isKey = isKey;		
+		this.isKey = isKey;
+		this.refTable = null;
 	}
 	
 	public Field(String title, String refTable, boolean isKey) {
@@ -32,7 +33,14 @@ public final class Field {
 		this.isKey = isKey;		
 	}
 	
-	public enum Type { INTEGER, BOOLEAN, TEXT, TEXTAREA, REFERENCE };
+	public Field(Field field) {
+		this.title = field.title();
+		this.type = field.type();
+		this.refTable = field.refTable();
+		this.isKey = field.isKey;
+	}
+	
+	public enum Type { INTEGER, BOOLEAN, TEXT, TEXTAREA, REFERENCE }
 	
 	/**
 	 * Get the title of this field.

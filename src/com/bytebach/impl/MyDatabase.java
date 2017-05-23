@@ -4,6 +4,7 @@ import com.bytebach.model.Database;
 import com.bytebach.model.Field;
 import com.bytebach.model.Table;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -23,13 +24,29 @@ public class MyDatabase implements Database {
     // is doing something sensible, then consider how you're going to get those
     // unit test to past.
     
+    /**
+     * The tables contained in this database
+     */
+    private List<Table> tables;
+    
+    /**
+     * creates a new database
+     * @param tables the tables in the database
+     */
+    public MyDatabase(List<Table> tables) {
+        this.tables = tables;
+    }
+    
     @Override
     public Collection<? extends Table> tables() {
-        return null;
+        return new ArrayList<>(tables);
     }
     
     @Override
     public Table table(String name) {
+        for (Table table : tables) {
+            if (table.name().equals(name)) return table;
+        }
         return null;
     }
     
