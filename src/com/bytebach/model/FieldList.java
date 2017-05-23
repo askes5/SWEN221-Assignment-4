@@ -8,7 +8,7 @@ import java.util.List;
  * this list cannot be modified, i.e. is Immutable
  * @author Matthew Askes
  */
-public class FieldList extends AbstractList<Field> {
+public class FieldList extends AbstractList<Field> implements List<Field> {
     
     private final List<Field> fields;
     

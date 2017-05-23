@@ -37,6 +37,13 @@ public class MyDatabase implements Database {
         this.tables = tables;
     }
     
+    /**
+     * create a new empty database
+     */
+    public MyDatabase() {
+        tables = new ArrayList<>();
+    }
+    
     @Override
     public Collection<? extends Table> tables() {
         return new ArrayList<>(tables);
