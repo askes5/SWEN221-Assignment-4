@@ -42,20 +42,129 @@ public class ListTable implements Table {
     
     @Override
     public List<Value> row(Value... keys) {
-        for (TableRow row :
+        for (List<Value> row :
                 rows) {
-            if (Arrays.equals(row.toArray(), keys)) return row;
+            if (Arrays.equals(new TableRow(row).getKeyValues().toArray(), keys)) return row;
         }
         return null;
     }
     
     @Override
     public void delete(Value... keys) {
-        for (TableRow row : rows) {
-            if (Arrays.equals(row.toArray(), keys)) rows.remove(row);
+        for (int i = 0; i < rows.size(); i++) {
+            List<Value> row = rows.get(i).getKeyValues();
+            if (Arrays.equals(row.toArray(), keys)) rows.remove(i);
         }
     }
     
-
+    /**
+     * Defines a list of table rows, used as the list of rows in a table
+     * @author Askes
+     */
+    public class TableRowList extends AbstractList<List<Value>> implements List<List<Value>> {
+        
+        List<TableRow> rows;
+        
+        /**
+         * Create new row list with given rows
+         * @param rows the rows in this row list
+         */
+        public TableRowList(List<TableRow> rows) {
+            this.rows = rows;
+        }
+        
+        /**
+         * Creates a new row list with default values, i.e. no rows
+         */
+        public TableRowList() {
+            this.rows = new ArrayList<>();
+        }
+    
+        @Override
+        public List<Value> remove(int index) {
+            return rows.remove(index);
+        }
+    
+        @Override
+        public boolean add(List<Value> row) {
+            TableRow toAdd= new TableRow(row);
+    
+            for (int i = 0; i < fields.size(); i++) {
+                Field field = fields.get(i);
+                if (field.isKey()) {
+                    for (TableRow tableRow : rows) {
+                        if (tableRow.get(i).equals(toAdd.get(i))) throw new InvalidOperation("Cannot add row with same key field");
+                    }
+                }
+            }
+            
+            return rows.add(new TableRow(row));
+        }
+        
+        @Override
+        public TableRow get(int index) {
+            return rows.get(index);
+        }
+        
+        @Override
+        public int size() {
+            return rows.size();
+        }
+        
+    }
+    
+    /**
+     * Defines a row in the table as a list of values
+     * @author Matthew Askes
+     */
+    public class TableRow extends AbstractList<Value> implements List<Value> {
+        private List<Value> values;
+        
+        /**
+         * create a new row from given values
+         * @param values the values in this row
+         */
+        public TableRow(List<Value> values) {
+            this.values = values;
+        }
+        
+        /**
+         * create a new row with no values
+         */
+        public TableRow() {
+            values = new ArrayList<>(fields.size());
+        }
+    
+        /**
+         * returns all of the values that are keys
+         * @return a list of keys, or null if no keys found
+         */
+        public List<Value> getKeyValues(){
+            List<Value> keys = new ArrayList<>();
+            for (int i = 0; i < fields.size(); i++) {
+                Field field = fields.get(i);
+                if (field.isKey()) {
+                    keys.add(values.get(i));
+                }
+            }
+            return keys.size() == 0 ? null : keys;
+        }
+        
+        @Override
+        public Value set(int index, Value element) {
+            if (fields.get(index).isKey()) throw new InvalidOperation("Cannot modify a field that is a key field");
+            return values.set(index, element);
+        }
+        
+        @Override
+        public int size() {
+            return values.size();
+        }
+        
+        @Override
+        public Value get(int index) {
+            return values.get(index);
+        }
+    }
     
 }

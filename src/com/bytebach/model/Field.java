@@ -36,7 +36,11 @@ public final class Field {
 	public Field(Field field) {
 		this.title = field.title();
 		this.type = field.type();
-		this.refTable = field.refTable();
+		if (field.refTable == null) {
+			this.refTable = null;
+		} else {
+			this.refTable = field.refTable();
+		}
 		this.isKey = field.isKey;
 	}
 	
