@@ -12,7 +12,7 @@ public class ListTable implements Table {
     
     private final String name;
     private final FieldList fields;
-    private final List<TableRow> rows;
+    private final TableRowList rows;
     
     /**
      * creates a new table with no rows
@@ -22,7 +22,7 @@ public class ListTable implements Table {
     public ListTable(String name, FieldList fields) {
         this.name = name;
         this.fields = fields;
-        this.rows = new ArrayList<>();
+        this.rows = new TableRowList();
     }
     
     @Override
@@ -56,44 +56,6 @@ public class ListTable implements Table {
         }
     }
     
-    
-    /**
-     * Defines a row in the table as a list of values
-     * @author Matthew Askes
-     */
-    public class TableRow extends AbstractList<Value> implements List<Value>{
-        private List<Value> values;
-        
-        /**
-         * create a new row from given values
-         * @param values the values in this row
-         */
-        public TableRow(List<Value> values) {
-            this.values = values;
-        }
-        
-        /**
-         * create a new row with no values
-         */
-        public TableRow() {
-            values = new ArrayList<>(fields.size());
-        }
-        
-        @Override
-        public Value set(int index, Value element) {
-            if (fields.get(index).isKey()) throw new InvalidOperation("Cannot modify a field that is a key field");
-            return values.set(index, element);
-        }
-        
-        @Override
-        public int size() {
-            return values.size();
-        }
-        
-        @Override
-        public Value get(int index) {
-            return values.get(index);
-        }
-    }
+
     
 }
