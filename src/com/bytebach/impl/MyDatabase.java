@@ -60,7 +60,7 @@ public class MyDatabase implements Database {
         for (Table table : tables) {
             if (table.name().equals(name)) throw new InvalidOperation("cannot create table with same name");
         }
-        tables.add(new ListTable(name, new FieldList(fields)));
+        tables.add(new ListTable(name, new FieldList(fields),this));
     }
     
     @Override

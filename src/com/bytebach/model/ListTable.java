@@ -1,9 +1,6 @@
 package com.bytebach.model;
 
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Matthew Askes
@@ -13,15 +10,21 @@ public class ListTable implements Table {
     private final String name;
     private final FieldList fields;
     private final TableRowList rows;
-    
+    /**
+     * the database this table belongs to
+     */
+    private final Database database;
+
     /**
      * creates a new table with no rows
      * @param name the name of the table
      * @param fields the fields in the table
+     * @param database the database this table belongs to
      */
-    public ListTable(String name, FieldList fields) {
+    public ListTable(String name, FieldList fields, Database database) {
         this.name = name;
         this.fields = fields;
+        this.database = database;
         this.rows = new TableRowList();
     }
     
@@ -44,7 +47,8 @@ public class ListTable implements Table {
     public List<Value> row(Value... keys) {
         for (List<Value> row :
                 rows) {
-            if (Arrays.equals(new TableRow(row).getKeyValues().toArray(), keys)) return row;
+            Collection<Value> rowKeyValues = ((TableRow) row).getKeyValues(); // requires casting to TableRow to allow access to getKeyValues
+            if (rowKeyValues.size() == keys.length && rowKeyValues.containsAll(Arrays.asList(keys))) return row;
         }
         return null;
     }
@@ -88,7 +92,7 @@ public class ListTable implements Table {
         @Override
         public boolean add(List<Value> row) {
             TableRow toAdd= new TableRow(row);
-    
+
             for (int i = 0; i < fields.size(); i++) {
                 Field field = fields.get(i);
                 if (field.isKey()) {
@@ -126,6 +130,7 @@ public class ListTable implements Table {
          */
         public TableRow(List<Value> values) {
             this.values = values;
+            checkValidReferences();
         }
         
         /**
@@ -149,11 +154,61 @@ public class ListTable implements Table {
             }
             return keys.size() == 0 ? null : keys;
         }
-        
+
+        /**
+         * checks that all the references in this row are valid (with respect to the databse that contains this table)
+         * @return true if all references are valid
+         * @throws InvalidOperation if any references are not valid
+         */
+        public boolean checkValidReferences(){
+            for (int i = 0; i < values.size(); i++) {
+                if (values.get(i) instanceof ReferenceValue){
+                    ReferenceValue reference = (ReferenceValue) values.get(i);
+                    try {
+                        if (database.table(reference.table()).row(reference.keys()).get(i) == null) {
+                            throw new InvalidOperation("invalid reference: " + reference);
+                        }
+                    } catch (NullPointerException e){
+                        throw new InvalidOperation("invalid reference: " + reference);
+                    }
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public boolean add(Value value) {
+            throw new InvalidOperation("Add is forbidden in table row");
+        }
+
+        @Override
+        public Value remove(int index) {
+            throw new InvalidOperation("Remove is forbidden in table row");
+        }
+
+
+
         @Override
         public Value set(int index, Value element) {
             if (fields.get(index).isKey()) throw new InvalidOperation("Cannot modify a field that is a key field");
-            return values.set(index, element);
+            Field.Type type = fields.get(index).type();
+
+            if (element instanceof IntegerValue && type != Field.Type.INTEGER) throw new InvalidOperation("incorrect type, expected an integer");
+            if (element instanceof StringValue){
+                StringValue stringValue = (StringValue)element;
+                if (type == Field.Type.TEXT && stringValue.value().contains("\n")){
+                    throw new InvalidOperation("Text cannot have new lines");
+                }
+                if (type != Field.Type.TEXT && type != Field.Type.TEXTAREA){
+                    throw new InvalidOperation("incorrect type, expected text or text area");
+                }
+            }
+            if (element instanceof ReferenceValue && type != Field.Type.REFERENCE) throw new InvalidOperation("incorrect type, expected a referecne");
+            if (element instanceof BooleanValue && type != Field.Type.BOOLEAN) throw new InvalidOperation("incorrect type, expected a boolean");
+
+            Value prev = values.set(index,element);
+            checkValidReferences();
+            return prev;
         }
         
         @Override
@@ -163,7 +218,13 @@ public class ListTable implements Table {
         
         @Override
         public Value get(int index) {
-            return values.get(index);
+            Value value = values.get(index);
+//            if (value instanceof ReferenceValue){
+//                ReferenceValue reference = (ReferenceValue) value;
+//                return database.table(reference.table()).row(reference.keys()).get(index);
+//            } else {
+                return value;
+//            }
         }
     }
     

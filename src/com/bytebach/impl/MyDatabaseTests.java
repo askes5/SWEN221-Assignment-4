@@ -148,10 +148,10 @@ public class MyDatabaseTests {
 		
 		try { 
 			// Here, we're trying to set a key value ... should be impossible!
-			db.table("table").row(new IntegerValue(0)).set(1, new IntegerValue(1));			
+			db.table("table").row(new IntegerValue(0)).set(1, new IntegerValue(1)); // wrong type not not a key field
 			fail("Shouldn't be able to field to value of incorrect type");
 		} catch(InvalidOperation e) {
-			
+
 		}		
 	}
 	
