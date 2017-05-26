@@ -67,7 +67,7 @@ public class ListTable implements Table {
      */
     public class TableRowList extends AbstractList<List<Value>> implements List<List<Value>> {
         
-        List<TableRow> rows;
+        private List<TableRow> rows;
         
         /**
          * Create new row list with given rows
@@ -93,6 +93,13 @@ public class ListTable implements Table {
         public boolean add(List<Value> row) {
             TableRow toAdd= new TableRow(row);
 
+            if (row == null ) {
+                throw new InvalidOperation("Cannot add a null row to the list");
+            }
+            if (row.size() != fields.size()){
+                throw new InvalidOperation("wrong number of values");
+            }
+            
             for (int i = 0; i < fields.size(); i++) {
                 Field field = fields.get(i);
                 if (field.isKey()) {
@@ -156,11 +163,11 @@ public class ListTable implements Table {
         }
 
         /**
-         * checks that all the references in this row are valid (with respect to the databse that contains this table)
+         * checks that all the references in this row are valid (with respect to the database that contains this table)
          * @return true if all references are valid
          * @throws InvalidOperation if any references are not valid
          */
-        public boolean checkValidReferences(){
+        public void checkValidReferences(){
             for (int i = 0; i < values.size(); i++) {
                 if (values.get(i) instanceof ReferenceValue){
                     ReferenceValue reference = (ReferenceValue) values.get(i);
@@ -173,7 +180,6 @@ public class ListTable implements Table {
                     }
                 }
             }
-            return true;
         }
 
         @Override
@@ -185,9 +191,12 @@ public class ListTable implements Table {
         public Value remove(int index) {
             throw new InvalidOperation("Remove is forbidden in table row");
         }
-
-
-
+    
+        @Override
+        public boolean remove(Object o) {
+            throw new InvalidOperation("Remove is forbidden in table row");
+        }
+    
         @Override
         public Value set(int index, Value element) {
             if (fields.get(index).isKey()) throw new InvalidOperation("Cannot modify a field that is a key field");
@@ -203,7 +212,7 @@ public class ListTable implements Table {
                     throw new InvalidOperation("incorrect type, expected text or text area");
                 }
             }
-            if (element instanceof ReferenceValue && type != Field.Type.REFERENCE) throw new InvalidOperation("incorrect type, expected a referecne");
+            if (element instanceof ReferenceValue && type != Field.Type.REFERENCE) throw new InvalidOperation("incorrect type, expected a reference");
             if (element instanceof BooleanValue && type != Field.Type.BOOLEAN) throw new InvalidOperation("incorrect type, expected a boolean");
 
             Value prev = values.set(index,element);
@@ -219,7 +228,7 @@ public class ListTable implements Table {
         @Override
         public Value get(int index) {
             Value value = values.get(index);
-//            if (value instanceof ReferenceValue){
+//            if (value instanceof ReferenceValue){ // this code forces a reference value ot return the value it references instead of the reference
 //                ReferenceValue reference = (ReferenceValue) value;
 //                return database.table(reference.table()).row(reference.keys()).get(index);
 //            } else {

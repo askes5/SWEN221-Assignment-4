@@ -17,7 +17,7 @@ public class MyDatabase implements Database {
     // cascading delete).
     //
     // HINT: to get started, don't bother providing your own implementations of
-    // List as discussed above! Instead, implement MyDatabase and MyTabe using
+    // List as discussed above! Instead, implement MyDatabase and MyTable using
     // conventional Collections. When you have that working, and the web system
     // is doing something sensible, then consider how you're going to get those
     // unit test to past.
@@ -49,6 +49,7 @@ public class MyDatabase implements Database {
     
     @Override
     public Table table(String name) {
+        if (name == null) throw new InvalidOperation("name cannot be null");
         for (Table table : tables) {
             if (table.name().equals(name)) return table;
         }
@@ -57,6 +58,8 @@ public class MyDatabase implements Database {
     
     @Override
     public void createTable(String name, List<Field> fields) {
+        if (name == null) throw new InvalidOperation("name cannot be null");
+        if (fields == null) throw new InvalidOperation("fields cannot be null");
         for (Table table : tables) {
             if (table.name().equals(name)) throw new InvalidOperation("cannot create table with same name");
         }

@@ -77,7 +77,7 @@ public class ReferenceValue implements Value {
 	}
 	
 	public int hashCode() {
-		return table.hashCode() + keys.hashCode();
+		return table.hashCode() + Arrays.hashCode(keys);
 	}
 	
 	public boolean equals(Object o) {
