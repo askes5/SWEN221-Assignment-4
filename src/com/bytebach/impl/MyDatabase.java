@@ -2,9 +2,7 @@ package com.bytebach.impl;
 
 import com.bytebach.model.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class MyDatabase implements Database {
     // This is where you'll probably want to start. You'll need to provide an
@@ -69,5 +67,44 @@ public class MyDatabase implements Database {
     @Override
     public void deleteTable(String name) {
         
+    }
+    
+    /**
+     * finds and removes all rows with references to a particular value
+     * @param value the value to find references to
+     * @param keys the keys in the row containing the value
+     * @param tableName the name of the table that the value belongs to
+     * @return a set of all the rows removed
+     */
+    public Set<List<Value>> cascadeDelete(String tableName, Value[] keys, Value value){
+        Set<List<Value>> rows = new HashSet<>();
+        for (Table table : tables) {
+            List<List<Value>> tableRow = table.rows();
+            for (int i1 = 0; i1 < tableRow.size(); i1++) { // is a indexed for loop to prevent errors from editing the row being iteratored
+                List<Value> row = tableRow.get(i1);
+                for (int i = 0; i < row.size(); i++) {
+                    Value item = row.get(i);
+                    if (item instanceof ReferenceValue) {
+                        ReferenceValue referenceValue = (ReferenceValue) item;
+                        try {
+                            List<Value> referencedRow = this.table(referenceValue.table()).row(referenceValue.keys());
+                            if (referencedRow.get(i).equals(value)
+                                    && referenceValue.table().equals(tableName)
+                                    && Arrays.equals(referenceValue.keys(), keys)) {
+                                rows.add(row);
+                                Value[] keyValues = new Value[0];
+                                keyValues = ((ListTable.TableRow) row).getKeyValues().toArray(keyValues);
+                                rows.addAll(cascadeDelete(table.name(),
+                                                          keyValues,
+                                                          item));
+                                table.delete(keyValues);
+                            }
+                        } catch (InvalidOperation e) {
+                        }
+                    }
+                }
+            }
+        }
+        return rows;
     }
 }

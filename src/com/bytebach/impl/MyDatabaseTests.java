@@ -396,6 +396,27 @@ public class MyDatabaseTests {
 	}
 	
 	@Test
+	public void test_FindReference() {
+		Object[][] rawTableRows = {{0, "Hello World"}, {1, "Blah"}};
+		Object[][] rawRefRows = {{0,new ReferenceValue("table",0)}};
+		Value[][] tableRows = toValues(rawTableRows);
+		Value[][] refRows = toValues(rawRefRows);
+		
+		Database db = createDatabase();
+		createTable(db, "table", FIELDS_1);
+		createTable(db, "refs", FIELDS_2);
+		addRow(db,"table",tableRows[0]);
+		addRow(db,"table",tableRows[1]);
+		addRow(db,"refs",refRows[0]);
+		
+		MyDatabase mydb = (MyDatabase) db;
+		
+		Set<List<Value>> values = mydb.cascadeDelete("table", new Value[]{new IntegerValue(0)}, new StringValue("Hello World"));
+		
+		assertTrue(mydb.cascadeDelete("table", new Value[]{new IntegerValue(0)}, new StringValue("Hello World")) != null);
+	}
+	
+	@Test
 	public void test22_CascadingDelete() {
 		Object[][] rawTableRows = {{0, "Hello WOrld"}, {1, "Blah"}};
 		Object[][] rawRefRows = {{0,new ReferenceValue("table",0)}};

@@ -1,5 +1,7 @@
 package com.bytebach.model;
 
+import com.bytebach.impl.MyDatabase;
+
 import java.util.*;
 
 /**
@@ -45,12 +47,11 @@ public class ListTable implements Table {
     
     @Override
     public List<Value> row(Value... keys) {
-        for (List<Value> row :
-                rows) {
-            Collection<Value> rowKeyValues = ((TableRow) row).getKeyValues(); // requires casting to TableRow to allow access to getKeyValues
+        for (List<Value> row : rows) {
+            List<Value> rowKeyValues = ((TableRow) row).getKeyValues(); // requires casting to TableRow to allow access to getKeyValues
             if (rowKeyValues.size() == keys.length && rowKeyValues.containsAll(Arrays.asList(keys))) return row;
         }
-        return null;
+        throw new InvalidOperation("No row found");
     }
     
     @Override
@@ -86,6 +87,15 @@ public class ListTable implements Table {
     
         @Override
         public List<Value> remove(int index) {
+            TableRow row = rows.get(index);
+    
+            if (database instanceof MyDatabase) {
+                for (Value value : row) {
+                    Value[] keyValues = new Value[0];
+                    keyValues = row.getKeyValues().toArray(keyValues);
+                    ((MyDatabase) database).cascadeDelete(name, keyValues, value);
+                }
+            }
             return rows.remove(index);
         }
     
@@ -160,6 +170,18 @@ public class ListTable implements Table {
                 }
             }
             return keys.size() == 0 ? null : keys;
+        }
+    
+        /**
+         * returns all the values in this row that are references
+         * @return a list of reference values in this table, (will return an empty list if no values found)
+         */
+        public List<ReferenceValue> getReferenceValues(){
+            List<ReferenceValue> referenceValues = new ArrayList<>();
+            for (Value value : values) {
+                if (value instanceof ReferenceValue) referenceValues.add((ReferenceValue) value);
+            }
+            return referenceValues;
         }
 
         /**
