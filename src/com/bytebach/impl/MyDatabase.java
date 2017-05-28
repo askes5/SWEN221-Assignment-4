@@ -66,7 +66,12 @@ public class MyDatabase implements Database {
     
     @Override
     public void deleteTable(String name) {
-        
+        for (Table table : tables) {
+            if (table.name().equals(name)) {
+                tables.remove(table);
+                return;
+            }
+        }
     }
     
     /**

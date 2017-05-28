@@ -118,7 +118,7 @@ public class ListTable implements Table {
                 }
             }
             
-            return rows.add(new TableRow(row));
+            return rows.add(toAdd);
         }
         
         @Override
@@ -146,6 +146,8 @@ public class ListTable implements Table {
          */
         public TableRow(List<Value> values) {
             this.values = values;
+            if (values.size() != fields.size()) throw new InvalidOperation("wrong number of values");
+            checkAllValuesType();
             checkValidReferences();
         }
         
@@ -185,7 +187,6 @@ public class ListTable implements Table {
 
         /**
          * checks that all the references in this row are valid (with respect to the database that contains this table)
-         * @return true if all references are valid
          * @throws InvalidOperation if any references are not valid
          */
         public void checkValidReferences(){
@@ -202,7 +203,44 @@ public class ListTable implements Table {
                 }
             }
         }
-
+    
+        /**
+         * checks if the type of a given value is correct.
+         * i.e. agrees with the type defined by the field
+         * @param index the location in the row of the value
+         * @param value the value to check if valid
+         * @throws InvalidOperation if the value is of incorrect type
+         */
+        public void checkValidType(int index, Value value){
+            Field.Type type = fields.get(index).type();
+    
+            if (value == null) throw new InvalidOperation("Value may not be null");
+            
+            if (value instanceof IntegerValue && type != Field.Type.INTEGER) throw new InvalidOperation("incorrect type, expected an integer");
+            if (value instanceof StringValue){
+                StringValue stringValue = (StringValue)value;
+                if (type == Field.Type.TEXT && stringValue.value().contains("\n")){
+                    throw new InvalidOperation("Text cannot have new lines");
+                }
+                if (type != Field.Type.TEXT && type != Field.Type.TEXTAREA){
+                    throw new InvalidOperation("incorrect type, expected text or text area");
+                }
+            }
+            if (value instanceof ReferenceValue && type != Field.Type.REFERENCE) throw new InvalidOperation("incorrect type, expected a reference");
+            if (value instanceof BooleanValue && type != Field.Type.BOOLEAN) throw new InvalidOperation("incorrect type, expected a boolean");
+        }
+    
+        /**
+         * checks that all the values in this row are of the correct type
+         * @throws InvalidOperation if any value if of the incorrect type
+         */
+        public void checkAllValuesType(){
+            for (int i = 0; i < values.size(); i++) {
+                Value value = values.get(i);
+                checkValidType(i,value);
+            }
+        }
+        
         @Override
         public boolean add(Value value) {
             throw new InvalidOperation("Add is forbidden in table row");
@@ -222,20 +260,7 @@ public class ListTable implements Table {
         public Value set(int index, Value element) {
             if (fields.get(index).isKey()) throw new InvalidOperation("Cannot modify a field that is a key field");
             if (element == null) throw new InvalidOperation("Cannot set value to null");
-            Field.Type type = fields.get(index).type();
-
-            if (element instanceof IntegerValue && type != Field.Type.INTEGER) throw new InvalidOperation("incorrect type, expected an integer");
-            if (element instanceof StringValue){
-                StringValue stringValue = (StringValue)element;
-                if (type == Field.Type.TEXT && stringValue.value().contains("\n")){
-                    throw new InvalidOperation("Text cannot have new lines");
-                }
-                if (type != Field.Type.TEXT && type != Field.Type.TEXTAREA){
-                    throw new InvalidOperation("incorrect type, expected text or text area");
-                }
-            }
-            if (element instanceof ReferenceValue && type != Field.Type.REFERENCE) throw new InvalidOperation("incorrect type, expected a reference");
-            if (element instanceof BooleanValue && type != Field.Type.BOOLEAN) throw new InvalidOperation("incorrect type, expected a boolean");
+            checkValidType(index,element);
 
             Value prev = values.set(index,element);
             checkValidReferences();
