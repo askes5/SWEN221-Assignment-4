@@ -77,29 +77,34 @@ public class MyDatabase implements Database {
      * @return a set of all the rows removed
      */
     public Set<List<Value>> cascadeDelete(String tableName, Value[] keys, Value value){
+        if (tableName == null || keys == null || value == null){
+            throw new InvalidOperation("When cascade deleting no parameter may be null");
+        }
+        if (keys.length == 0) throw new InvalidOperation("Must have at least one key when cascade deleting");
+        
         Set<List<Value>> rows = new HashSet<>();
-        for (Table table : tables) {
-            List<List<Value>> tableRow = table.rows();
-            for (int i1 = 0; i1 < tableRow.size(); i1++) { // is a indexed for loop to prevent errors from editing the row being iteratored
-                List<Value> row = tableRow.get(i1);
-                for (int i = 0; i < row.size(); i++) {
-                    Value item = row.get(i);
-                    if (item instanceof ReferenceValue) {
+        for (Table table : tables) { // for each table in the database
+            List<List<Value>> tableRows = table.rows();
+            for (int i = 0; i < tableRows.size(); i++) { // is a indexed for loop to prevent errors from editing the row while it is being iterated
+                List<Value> row = tableRows.get(i); // for each row in the table
+                for (int j = 0; j < row.size(); j++) { // for each item in the row
+                    Value item = row.get(j);
+                    if (item instanceof ReferenceValue) { // if the item is a reference value
                         ReferenceValue referenceValue = (ReferenceValue) item;
                         try {
-                            List<Value> referencedRow = this.table(referenceValue.table()).row(referenceValue.keys());
-                            if (referencedRow.get(i).equals(value)
+                            List<Value> referencedRow = this.table(referenceValue.table()).row(referenceValue.keys()); // find row the reference value references
+                            if (referencedRow.get(j).equals(value) //if the reference value equals the value we are cascade deleting
                                     && referenceValue.table().equals(tableName)
                                     && Arrays.equals(referenceValue.keys(), keys)) {
                                 rows.add(row);
                                 Value[] keyValues = new Value[0];
-                                keyValues = ((ListTable.TableRow) row).getKeyValues().toArray(keyValues);
+                                keyValues = ((ListTable.TableRow) row).getKeyValues().toArray(keyValues); // get the key values of the reference value
                                 rows.addAll(cascadeDelete(table.name(),
                                                           keyValues,
                                                           item));
-                                table.delete(keyValues);
+                                table.delete(keyValues); // remove the reference row from the table
                             }
-                        } catch (InvalidOperation e) {
+                        } catch (InvalidOperation e) { // catches an invalid operation when a row is not found
                         }
                     }
                 }

@@ -222,6 +222,7 @@ public class ListTable implements Table {
         @Override
         public Value set(int index, Value element) {
             if (fields.get(index).isKey()) throw new InvalidOperation("Cannot modify a field that is a key field");
+            if (element == null) throw new InvalidOperation("Cannot set value to null");
             Field.Type type = fields.get(index).type();
 
             if (element instanceof IntegerValue && type != Field.Type.INTEGER) throw new InvalidOperation("incorrect type, expected an integer");
@@ -250,7 +251,7 @@ public class ListTable implements Table {
         @Override
         public Value get(int index) {
             Value value = values.get(index);
-//            if (value instanceof ReferenceValue){ // this code forces a reference value ot return the value it references instead of the reference
+//            if (value instanceof ReferenceValue){ // this code forces a reference value to return the value it references instead of the reference
 //                ReferenceValue reference = (ReferenceValue) value;
 //                return database.table(reference.table()).row(reference.keys()).get(index);
 //            } else {

@@ -410,10 +410,13 @@ public class MyDatabaseTests {
 		addRow(db,"refs",refRows[0]);
 		
 		MyDatabase mydb = (MyDatabase) db;
+		List<Value> rowToremove = mydb.table("refs").row(new IntegerValue(0));
 		
-		Set<List<Value>> values = mydb.cascadeDelete("table", new Value[]{new IntegerValue(0)}, new StringValue("Hello World"));
+		Set<List<Value>> rowsRemoved = mydb.cascadeDelete("table", new Value[]{new IntegerValue(0)}, new StringValue("Hello World"));
 		
-		assertTrue(mydb.cascadeDelete("table", new Value[]{new IntegerValue(0)}, new StringValue("Hello World")) != null);
+		HashSet<List<Value>> expectedRows = new HashSet<>();
+		expectedRows.add(rowToremove);
+		assertTrue( rowsRemoved.containsAll( expectedRows ) );
 	}
 	
 	@Test
