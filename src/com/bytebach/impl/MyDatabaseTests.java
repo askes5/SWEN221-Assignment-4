@@ -396,30 +396,6 @@ public class MyDatabaseTests {
 	}
 	
 	@Test
-	public void test_FindReference() {
-		Object[][] rawTableRows = {{0, "Hello World"}, {1, "Blah"}};
-		Object[][] rawRefRows = {{0,new ReferenceValue("table",0)}};
-		Value[][] tableRows = toValues(rawTableRows);
-		Value[][] refRows = toValues(rawRefRows);
-		
-		Database db = createDatabase();
-		createTable(db, "table", FIELDS_1);
-		createTable(db, "refs", FIELDS_2);
-		addRow(db,"table",tableRows[0]);
-		addRow(db,"table",tableRows[1]);
-		addRow(db,"refs",refRows[0]);
-		
-		MyDatabase mydb = (MyDatabase) db;
-		List<Value> rowToremove = mydb.table("refs").row(new IntegerValue(0));
-		
-		Set<List<Value>> rowsRemoved = mydb.cascadeDelete("table", new Value[]{new IntegerValue(0)}, new StringValue("Hello World"));
-		
-		HashSet<List<Value>> expectedRows = new HashSet<>();
-		expectedRows.add(rowToremove);
-		assertTrue( rowsRemoved.containsAll( expectedRows ) );
-	}
-	
-	@Test
 	public void test22_CascadingDelete() {
 		Object[][] rawTableRows = {{0, "Hello WOrld"}, {1, "Blah"}};
 		Object[][] rawRefRows = {{0,new ReferenceValue("table",0)}};
@@ -441,7 +417,7 @@ public class MyDatabaseTests {
 		Value[][] nRefRows = toValues(nRawRefRows);
 		
 		checkTable(db,"table",nTableRows);
-		checkTable(db,"refs",nRefRows);		
+		checkTable(db,"refs",nRefRows);
 	}
 	
 	@Test
@@ -494,7 +470,7 @@ public class MyDatabaseTests {
 		Value[][] nRefRows = toValues(nRawRefRows);
 
 		checkTable(db,"table",nTableRows);
-		checkTable(db,"refs",nRefRows);	
+		checkTable(db,"refs",nRefRows);
 	}
 	
 	@Test
@@ -521,11 +497,35 @@ public class MyDatabaseTests {
 		Value[][] nRefRows = toValues(nRawRefRows);
 
 		checkTable(db,"table",nTableRows);
-		checkTable(db,"refs",nRefRows);	
+		checkTable(db,"refs",nRefRows);
 	}
-
-
-	// =====================================================================================================	
+	
+	@Test
+	public void test_FindReference() {
+		Object[][] rawTableRows = {{0, "Hello World"}, {1, "Blah"}};
+		Object[][] rawRefRows = {{0,new ReferenceValue("table",0)}};
+		Value[][] tableRows = toValues(rawTableRows);
+		Value[][] refRows = toValues(rawRefRows);
+		
+		Database db = createDatabase();
+		createTable(db, "table", FIELDS_1);
+		createTable(db, "refs", FIELDS_2);
+		addRow(db,"table",tableRows[0]);
+		addRow(db,"table",tableRows[1]);
+		addRow(db,"refs",refRows[0]);
+		
+		MyDatabase mydb = (MyDatabase) db;
+		List<Value> rowToremove = mydb.table("refs").row(new IntegerValue(0));
+		
+		Set<List<Value>> rowsRemoved = mydb.cascadeDelete("table", new Value[]{new IntegerValue(0)}, new StringValue("Hello World"));
+		
+		HashSet<List<Value>> expectedRows = new HashSet<>();
+		expectedRows.add(rowToremove);
+		assertTrue( rowsRemoved.containsAll( expectedRows ) );
+	}
+	
+	
+	// =====================================================================================================
 	// Helper Methods!
 	// =====================================================================================================
 	

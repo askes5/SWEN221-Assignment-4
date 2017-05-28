@@ -51,7 +51,7 @@ public class ListTable implements Table {
             List<Value> rowKeyValues = ((TableRow) row).getKeyValues(); // requires casting to TableRow to allow access to getKeyValues
             if (rowKeyValues.size() == keys.length && rowKeyValues.containsAll(Arrays.asList(keys))) return row;
         }
-        throw new InvalidOperation("No row found");
+        throw new InvalidOperation("No row found with keys: " + Arrays.toString(keys));
     }
     
     @Override

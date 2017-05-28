@@ -106,7 +106,7 @@ public class MyDatabase implements Database {
                                 keyValues = ((ListTable.TableRow) row).getKeyValues().toArray(keyValues); // get the key values of the reference value
                                 rows.addAll(cascadeDelete(table.name(),
                                                           keyValues,
-                                                          item));
+                                                          referenceValue));
                                 table.delete(keyValues); // remove the reference row from the table
                             }
                         } catch (InvalidOperation e) { // catches an invalid operation when a row is not found
