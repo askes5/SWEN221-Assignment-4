@@ -101,7 +101,7 @@ public class ListTable implements Table {
     
         @Override
         public boolean add(List<Value> row) {
-            TableRow toAdd= new TableRow(row);
+            TableRow toAdd = new TableRow(row);
 
             if (row == null ) {
                 throw new InvalidOperation("Cannot add a null row to the list");
@@ -109,13 +109,12 @@ public class ListTable implements Table {
             if (row.size() != fields.size()){
                 throw new InvalidOperation("wrong number of values");
             }
-            
-            for (int i = 0; i < fields.size(); i++) {
-                Field field = fields.get(i);
-                if (field.isKey()) {
-                    for (TableRow tableRow : rows) {
-                        if (tableRow.get(i).equals(toAdd.get(i))) throw new InvalidOperation("Cannot add row with same key field");
-                    }
+
+            List<Value> toAddKeyValues = toAdd.getKeyValues();
+            for (TableRow tableRow : rows) {
+                List<Value> keyValues = tableRow.getKeyValues();
+                if (keyValues.containsAll(toAddKeyValues)) {
+                    throw new InvalidOperation("Cannot add row with same key field combination");
                 }
             }
             
